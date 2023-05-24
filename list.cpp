@@ -7,7 +7,7 @@ class Double_list {
 public:
 	class iterator;
 private:
-
+/////////////////////////////////////
 	class Node {
 		friend class Double_list;
 	
@@ -19,7 +19,9 @@ private:
 
 		Node() {};
 		Node(T _value) :value(_value) {};
+		~Node() {};
 	};
+/////////////////////////////////////////
 public:
 	class iterator {
 		friend class Double_list;
@@ -67,10 +69,10 @@ public:
 		//переводит итератор на предыдущий узел списка 
 		iterator& operator--()
 		{
-			if (the_node == nullptr)
+			/*if (the_node == nullptr)
 				throw "decremented an empty iterator";
 			if (the_node->prev == nullptr)
-				throw "tried to decrement past the beginning";
+				throw "tried to decrement past the beginning";*/
 
 			the_node = the_node->prev;
 			return *this;
@@ -87,7 +89,7 @@ public:
 	};
 
 
-	// Указатели на начало и конец
+private:
 	Node* head;
 	Node* tail;
 	//Итераторы
@@ -147,7 +149,7 @@ public:
 		Node* new_node = new Node(_value);
 		new_node->prev = tail->prev;
 		new_node->next = tail;
-		tail->prev->next = new_node;
+		new_node->prev->next = new_node;
 		tail->prev = new_node;
 		tail_it = iterator(tail);
 	}
@@ -186,14 +188,20 @@ public:
 	}
 
 	T remove_back() {
-		
+
+		if (tail->prev == head) {
+			return remove_front();
+
+		}
 		Node* node_to_del = tail->prev;
 		tail->prev = tail->prev->prev;
-		tail->prev->next = tail;
+		if (tail->prev != nullptr)
+			tail->prev->next = tail;
 		T return_val = node_to_del->value;
 		delete node_to_del;
 		tail_it = iterator(tail);
 		return return_val;
+
 	}
 
 
@@ -259,6 +267,7 @@ public:
 		name = hum.getName();
 		age = hum.getAge();
 	}
+	~Human_class() {}
 	string getName() {
 		return name;
 	}
@@ -283,57 +292,112 @@ public:
 
 
 int main() {
-	//Создаем контейнер
-	Double_list<Human_class> the_list;
-	Double_list<Human_class>::iterator list_it;
-	string human_names[] = { "John", "Jesse", "Alan","Hank"};
-	int size = sizeof(human_names) / sizeof(string);
-	////Добавляем вперед
-	for (int i = 1; i < 6; i++) {
-		the_list.push_front(*new Human_class(human_names[rand()%size],rand()%60));
-	}
-	cout << "push_front:" << endl;
-	for (list_it = the_list.front_it(); list_it != (the_list.back_it()); ++list_it) {
-			(*list_it).print_info();
-	}
+	
+	Double_list<Human_class*> the_list;
+	Double_list<Human_class*>::iterator list_it;
+	
+	srand(time(NULL));
 
-	//Добавляем назад
-	for (int i = 6; i < 11; i++) {
-		the_list.push_back(*new Human_class(human_names[rand() % size], rand() % 60));
-	}
-	cout << "push_back:" << endl;
-	for (list_it = the_list.front_it(); list_it != (the_list.back_it()); ++list_it) {
-		(*list_it).print_info();
-	}
-
-	// Удаляем спереди
-	cout << "remove_front " << endl;
-	the_list.remove_front().print_info(); //<< endl;
-
-	// Удаляем сзади
-	cout << "remove_back " << endl; 
-	the_list.remove_back().print_info();
-	cout << endl;
-	for (list_it = the_list.front_it(); list_it != (the_list.back_it()); ++list_it) {
-		(*list_it).print_info();
-	}
-
-	Human_class hum("Alan", 55);
-	bool flag = false;
-	for (list_it = the_list.front_it(); list_it != (the_list.back_it()); ++list_it ) {
-		cout << "Searching " << hum.getName() << " " << hum.getAge() << " age..." << endl;
-		if ((list_it) == the_list.find(hum)) {
-			cout << "Found!" << endl;
-			flag = true;
-			(*list_it).print_info();
-			the_list.remove_it(list_it);
+	clock_t start = clock();
+	for (int i = 0; i < 10000; i++) {
+		switch (rand() % 7) {
+		case 0: {
+			the_list.push_back(new Human_class("Back", rand() % 100));
+			cout << "push_back()\n";
+			break;
 		}
-		
-	}
-	if (!flag)
-		cout << "Not found!" << endl;
+		case 1: {
+			the_list.push_front(new Human_class("Front", rand()% 100));
+			cout << "push_front()\n";
+			break;
+		}
+		case 2: {
+			if (the_list.size() == 0) {
+				the_list.push_front(new Human_class("Front", rand() % 100));
+				cout << "push_front()\n";
 
+			}
+			else {
+				int tmp = rand() % the_list.size();
+				int j = 0;
+				for (list_it = the_list.front_it(); list_it != the_list.back_it(); ++list_it, j++) {
+					if (j == tmp) {
+						the_list.insert(new Human_class("Insert", rand() % 100), list_it);
+						cout << "insert()\n";
+						break;
+
+					}
+				}
+			}
+			break;
+		}
+		case 3: {
+			if (the_list.size() != 0) {
+				cout << "remove_back()\n";
+				delete the_list.remove_back();
+			}
+			else
+				cout << "list is empty\n";
+			break;
+		}
+		case 4: {
+			if (the_list.size() != 0) {
+				cout << "remove_front()\n";
+				delete the_list.remove_front();
+			}
+			else
+				cout << "list is empty\n";
+			break;
+		}
+		case 5: {
+			if (the_list.size()) {
+				int tmp = rand() % the_list.size();
+				int j = 0;
+				for (list_it = the_list.front_it(); list_it != the_list.back_it(); ++list_it, ++j) {
+					if (j == tmp) {
+						cout << "remove_it()\n";
+						the_list.remove_it(list_it);
+						break;
+					}
+				}
+			}
+			else {
+				cout << "list is empty\n";
+			}
+			break;
+		}
+		case 6: {
+			int tmp;
+			if (the_list.size()) {
+				tmp = rand() % the_list.size();
+				int j = 0;
+				for (list_it = the_list.front_it(); list_it != the_list.back_it(); ++list_it, ++j) {
+					if (j == tmp) {
+						cout << "obj->print_info(): ";
+						(*list_it)->print_info();
+						break;
+					}
+				}
+			}
+			else {
+				cout << "list is empty\n";
+			}
+			break;
+		}
+
+		}//switch
+	}//for
+	clock_t end = clock();
 	
 
+	cout << "\nFinally:\n";
+	int j = 0;
+	for (list_it = the_list.front_it(); list_it != the_list.back_it(); ++list_it) {
+		(*list_it)->print_info();
+		j++;
+	}
+	cout << "Number of items: " << the_list.size() << endl;
+	double seconds = (double)(end - start) / CLOCKS_PER_SEC;
+	cout << "\nTime: " << seconds << endl;
 	return 0;
 };

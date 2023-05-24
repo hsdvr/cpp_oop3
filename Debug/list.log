@@ -1,0 +1,3 @@
+﻿  list.cpp
+C:\Users\user\source\repos\list\list.cpp(299,12): warning C4244: аргумент: преобразование "time_t" в "unsigned int", возможна потеря данных
+  list.vcxproj -> C:\Users\user\source\repos\list\Debug\list.exe
